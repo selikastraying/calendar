@@ -1,30 +1,60 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+import Calendar from '../views/Calendar.vue'
+import store from '@/store/index.js'
+import UserServices from '@/services/UserServices.js'
 
-Vue.use(VueRouter);
+Vue.use(VueRouter)
 
 const routes = [
   {
-    path: "/",
-    name: "Home",
-    component: Home
+    path: '/auth',
+    name: 'Calendar',
+    // component: Calendar,
+    beforeEnter(routeTo, routeFrom, next) {
+      if (store.getters['user/getName'] == '') {
+        location.href =
+          'https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=1655687599&redirect_uri=https://selikastraying.github.io&state=12345abcde&scope=profile%20openid'
+      } else {
+        next('/')
+      }
+    }
   },
   {
-    path: "/about",
-    name: "About",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+    path: '/',
+    name: 'authed',
+    component: Calendar,
+    beforeEnter(routeTo, routeFrom, next) {
+      if (routeTo.query.code) {
+        UserServices.getToken(routeTo.query.code)
+          .then(token => {
+            UserServices.getProfile(token.id_token)
+              .then(profile => {
+                store.dispatch('user/setName', profile.name)
+              })
+              .catch(() => {
+                next('/auth')
+              })
+          })
+          .catch(() => {
+            next('/auth')
+          })
+        next()
+      } else {
+        next('/auth')
+      }
+    }
   }
-];
+]
+
+// router.beforeEach((routeTo, routeFrom, next) => {
+//   next()
+// })
 
 const router = new VueRouter({
-  mode: "history",
+  mode: 'history',
   base: process.env.BASE_URL,
   routes
-});
+})
 
-export default router;
+export default router
