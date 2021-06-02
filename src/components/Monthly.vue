@@ -9,7 +9,7 @@
             style="width:auto"
             alt="c"
           />
-          <h4>選擇日期</h4>
+          <h4 class="h-75 my-auto">選擇日期</h4>
         </div>
         <div class="d-flex flex-fill justify-content-end h-50 my-auto">
           <div class="mr-4" style="width:10%">
@@ -199,7 +199,7 @@ export default {
     }
   },
   mounted: function() {
-    this.initCalender(2021, 2)
+    this.initCalender(this.date.getFullYear(), this.date.getMonth())
   }
 }
 </script>
